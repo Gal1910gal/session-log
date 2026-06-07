@@ -51,6 +51,7 @@ export default function App() {
       onEdit={handleEdit}
       onDelete={handleDelete}
       onNew={handleNew}
+      onImport={(imported) => setSessions(imported)}
     />
   )
 }

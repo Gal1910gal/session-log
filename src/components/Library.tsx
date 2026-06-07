@@ -1,4 +1,5 @@
-import { type SessionEntry } from '../types'
+import { useRef } from 'react'
+import { type SessionEntry, STORAGE_KEY } from '../types'
 import { TEXT1, TEXT3, TEXT4 } from './FormField'
 import * as XLSX from 'xlsx'
 
@@ -78,7 +79,47 @@ interface Props {
   onNew: () => void
 }
 
-export default function Library({ sessions, onEdit, onDelete, onNew }: Props) {
+function exportJson(sessions: SessionEntry[]) {
+  const blob = new Blob([JSON.stringify(sessions, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `session-log-backup-${new Date().toISOString().slice(0,10)}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+interface Props {
+  sessions: SessionEntry[]
+  onEdit: (s: SessionEntry) => void
+  onDelete: (id: string) => void
+  onNew: () => void
+  onImport: (sessions: SessionEntry[]) => void
+}
+
+export default function Library({ sessions, onEdit, onDelete, onNew, onImport }: Props) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      try {
+        const imported: SessionEntry[] = JSON.parse(ev.target?.result as string)
+        if (!Array.isArray(imported)) { alert('קובץ לא תקין'); return }
+        const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]') as SessionEntry[]
+        const existingIds = new Set(existing.map(s => s.id))
+        const merged = [...existing, ...imported.filter(s => !existingIds.has(s.id))]
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
+        onImport(merged)
+        alert(`יובאו ${imported.length} מפגשים בהצלחה`)
+      } catch { alert('שגיאה בקריאת הקובץ') }
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }
+
   const btnBase: React.CSSProperties = {
     padding:'9px 20px', borderRadius:10, fontWeight:700, fontSize:14, cursor:'pointer', border:'none',
   }
@@ -90,12 +131,23 @@ export default function Library({ sessions, onEdit, onDelete, onNew }: Props) {
           <h1 style={{ fontSize:26, fontWeight:900, color:TEXT1, letterSpacing:'-0.02em' }}>יומן מפגשים</h1>
           <p style={{ fontSize:12, color:TEXT4, marginTop:3 }}>שיטת גלית — בקרה ופיתוח שיטה</p>
         </div>
-        <div style={{ display:'flex', gap:10 }}>
+        <div style={{ display:'flex', gap:8, flexWrap:'wrap', justifyContent:'flex-end' }}>
+          <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} style={{ display:'none' }} />
+          <button style={{ ...btnBase, background:'rgba(80,120,80,0.10)', color:'#3a6a48', border:'1px solid rgba(80,140,80,0.28)', fontSize:13 }}
+            onClick={() => fileInputRef.current?.click()}>
+            ייבוא JSON
+          </button>
           {sessions.length > 0 && (
-            <button style={{ ...btnBase, background:'rgba(165,130,80,0.12)', color:'#5c4a32', border:'1px solid rgba(165,130,80,0.28)' }}
-              onClick={() => exportToExcel(sessions)}>
-              ייצוא Excel
-            </button>
+            <>
+              <button style={{ ...btnBase, background:'rgba(80,120,80,0.10)', color:'#3a6a48', border:'1px solid rgba(80,140,80,0.28)', fontSize:13 }}
+                onClick={() => exportJson(sessions)}>
+                גיבוי JSON
+              </button>
+              <button style={{ ...btnBase, background:'rgba(165,130,80,0.12)', color:'#5c4a32', border:'1px solid rgba(165,130,80,0.28)', fontSize:13 }}
+                onClick={() => exportToExcel(sessions)}>
+                ייצוא Excel
+              </button>
+            </>
           )}
           <button style={{ ...btnBase, background:'linear-gradient(135deg,#8a6030,#b07840)', color:'rgba(255,251,243,0.96)', boxShadow:'0 2px 12px rgba(130,90,40,0.22)' }}
             onClick={onNew}>
