@@ -22,6 +22,7 @@ function exportToExcel(sessions: SessionEntry[]) {
     'מגדר': s.gender === 'female' ? 'נקבה' : 'זכר',
     'סוג מפגש': s.sessionType === 'first' ? 'ראשון' : s.sessionType === 'followup' ? 'המשך' : 'לא פרונטלי',
     'תחום': s.domain.join(', '),
+    'דפוסים שזוהו': (s.identifiedPatterns ?? []).join(', '),
     'מה ידעתי מראש': s.priorKnowledge.join(', '),
     'שאלה אמיתית': s.realQuestion.join(', '),
     'ניסוח שאלה עמוקה': s.realQuestionFormulation,
@@ -180,6 +181,13 @@ function SessionCard({ session: s, onEdit, onDelete }: { session: SessionEntry; 
           <p style={{ fontSize:12, color:TEXT4, marginTop:6, fontStyle:'italic', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:460 }}>
             {s.mainQuestion}
           </p>
+        )}
+        {(s.identifiedPatterns ?? []).length > 0 && (
+          <div style={{ display:'flex', gap:4, flexWrap:'wrap', marginTop:6 }}>
+            {(s.identifiedPatterns ?? []).map(p => (
+              <span key={p} style={{ fontSize:10, background:'rgba(138,96,48,0.10)', color:'#6a4020', padding:'2px 9px', borderRadius:10, border:'1px solid rgba(138,96,48,0.22)' }}>{p}</span>
+            ))}
+          </div>
         )}
         {s.goldenConclusion && (
           <p style={{ fontSize:11, color:'#8a6030', marginTop:4, fontStyle:'italic' }}>

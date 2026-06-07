@@ -22,6 +22,7 @@ export interface SessionEntry {
   realQuestionFormulation: string
 
   // Section 3 — שלב האבחון
+  identifiedPatterns: string[]   // זיהוי דפוסים מהמאגר
   pattern1Behavioral: string
   pattern1Indicates: string[]
   pattern1OtherText: string
@@ -96,4 +97,45 @@ export function deleteSession(id: string) {
 }
 export function newId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+}
+
+// ─── Pattern library ──────────────────────────────────────────────────────────
+export const PATTERNS_KEY = 'session-log-patterns'
+
+export const BUILT_IN_PATTERNS = [
+  'דפוס השלמות לפני חשיפה',
+  'דפוס אחריות היתר',
+  'דפוס הידיעה השקטה',
+  'דפוס עוד שכבה אחת',
+  'דפוס הצורך באישור סמכות',
+  'דפוס הצפה מרוב אפשרויות',
+  'דפוס ההסתרה מאחורי נתינה',
+  'דפוס הזהות הישנה',
+  'דפוס הפחד מהצלחה',
+  'דפוס הבלבול בין עומק לעומס',
+  'דפוס התנועה דרך משבר',
+  'דפוס הנאמנות למאמץ',
+  'דפוס ההמתנה לבהירות מלאה',
+  'דפוס המומחית שמסתתרת כתלמידה',
+  'דפוס השאלה שמסתירה שאלה',
+  'דפוס הפחד לאכזב את הדמות הישנה',
+  'דפוס הבלבול בין שקט לעצירות',
+  'דפוס הכאב שמתחפש לעצלנות',
+  'דפוס ההוכחה דרך עומס',
+  'דפוס הקטנה לפני בקשה',
+]
+
+export function loadCustomPatterns(): string[] {
+  try { return JSON.parse(localStorage.getItem(PATTERNS_KEY) ?? '[]') } catch { return [] }
+}
+export function addCustomPattern(name: string) {
+  const all = loadCustomPatterns()
+  if (!all.includes(name)) {
+    all.push(name)
+    localStorage.setItem(PATTERNS_KEY, JSON.stringify(all))
+  }
+}
+export function removeCustomPattern(name: string) {
+  const all = loadCustomPatterns().filter(p => p !== name)
+  localStorage.setItem(PATTERNS_KEY, JSON.stringify(all))
 }

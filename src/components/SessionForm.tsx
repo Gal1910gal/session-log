@@ -5,6 +5,7 @@ import {
   sectionTitle, labelStyle, inputStyle, textareaStyle,
   TEXT3, TEXT4,
 } from './FormField'
+import PatternPicker from './PatternPicker'
 
 const CARD  = 'rgba(255,251,243,0.92)'
 const CARD_B = 'rgba(185,158,118,0.28)'
@@ -39,6 +40,7 @@ function empty(): SessionDraft {
     date: today(), subjectName: '', birthDate: '', fullName: '', mainQuestion: '',
     gender: 'female', duration: '', sessionType: 'first', domain: [], domainOther: '',
     priorKnowledge: [], priorKnowledgeDetail: '', realQuestion: [], realQuestionOther: '', realQuestionFormulation: '',
+    identifiedPatterns: [],
     pattern1Behavioral: '', pattern1Indicates: [], pattern1OtherText: '',
     pattern2Gap: [], pattern2OtherText: '', pattern2Formulation: '',
     pattern3Timing: [], pattern3OtherText: '', pattern3Practical: '',
@@ -92,6 +94,7 @@ export default function SessionForm({ initial, onSave, onCancel }: Props) {
       realQuestion: d.realQuestion ?? [],
       realQuestionOther: d.realQuestionOther ?? '',
       realQuestionFormulation: d.realQuestionFormulation ?? '',
+      identifiedPatterns: d.identifiedPatterns ?? [],
       pattern1Behavioral: d.pattern1Behavioral ?? '',
       pattern1Indicates: d.pattern1Indicates ?? [],
       pattern1OtherText: d.pattern1OtherText ?? '',
@@ -224,6 +227,14 @@ export default function SessionForm({ initial, onSave, onCancel }: Props) {
       case 2: return (
         <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
           {sectionTitle('שלב האבחון לפני השיחה', 'שלושת הדפוסים שעלו')}
+
+          {/* Pattern library picker */}
+          <div style={{ padding:16, background:'rgba(185,158,118,0.10)', borderRadius:12, border:'1px solid rgba(165,130,80,0.25)' }}>
+            <PatternPicker
+              selected={d.identifiedPatterns ?? []}
+              onChange={v => set('identifiedPatterns', v)}
+            />
+          </div>
 
           <div style={{ padding:14, background:'rgba(255,251,240,0.6)', borderRadius:10, border:'1px solid rgba(165,130,80,0.20)', display:'flex', flexDirection:'column', gap:12 }}>
             <p style={{ fontSize:13, fontWeight:700, color:TEXT3 }}>דפוס 1 — המשמעות ההתנהגותית</p>
